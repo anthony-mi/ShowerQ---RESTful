@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ShowerQ.Models.Entities.Users
 {
-    public class SystemAdministrator
+    public class SystemAdministrator : User
     {
     }
 }

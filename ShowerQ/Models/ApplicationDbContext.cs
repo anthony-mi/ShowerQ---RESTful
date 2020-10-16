@@ -11,6 +11,7 @@ namespace ShowerQ.Models
     public class ApplicationDbContext : DbContext
     {
         #region Users
+        public DbSet<User> Users { get; set; }
         public DbSet<Tenant> Tenant { get; set; }
         public DbSet<DormitoryAdministrator> DormitoryAdministrators { get; set; }
         public DbSet<SystemAdministrator> SystemAdministrators { get; set; }
