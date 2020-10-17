@@ -13,6 +13,8 @@ namespace ShowerQ.Models.Entities
 
         public virtual City City { get; set; }
 
+        public string Address { get; set; }
+
         public int UniversityId { get; set; }
 
         public virtual University University { get; set; }
