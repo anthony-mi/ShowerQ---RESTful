@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ShowerQ.Models;
+using ShowerQ.Models.Entities.Users;
 
 namespace ShowerQ
 {
@@ -30,11 +32,14 @@ namespace ShowerQ
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connection));
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                    .AddEntityFrameworkStores<ApplicationDbContext>()
+                    .AddDefaultTokenProviders();
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -51,6 +56,27 @@ namespace ShowerQ
             {
                 endpoints.MapControllers();
             });
+
+            CreateRoles(serviceProvider);
+        }
+
+        private void CreateRoles(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            string[] roleNames = { "Tenant", "DormitoryAdministrator", "SystemAdministrator" };
+
+            foreach (var roleName in roleNames)
+            {
+                var roleExistsTask = roleManager.RoleExistsAsync(roleName);
+                roleExistsTask.Wait();
+
+                if (!roleExistsTask.Result)
+                {
+                    var createRoleTask = roleManager.CreateAsync(new IdentityRole(roleName));
+                    createRoleTask.Wait();
+                }
+            }
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ShowerQ.Models.Entities;
 using ShowerQ.Models.Entities.Users;
 using System;
@@ -8,11 +11,16 @@ using System.Threading.Tasks;
 
 namespace ShowerQ.Models
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext
     {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+
+        }
+
         #region Users
-        public DbSet<User> Users { get; set; }
-        public DbSet<Tenant> Tenant { get; set; }
+        public DbSet<Tenant> Tenants { get; set; }
         public DbSet<DormitoryAdministrator> DormitoryAdministrators { get; set; }
         public DbSet<SystemAdministrator> SystemAdministrators { get; set; }
         #endregion
@@ -23,11 +31,5 @@ namespace ShowerQ.Models
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<University> Universities { get; set; }
         #endregion
-
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-            Database.EnsureCreated();
-        }
     }
 }

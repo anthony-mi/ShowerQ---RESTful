@@ -1,6 +1,8 @@
-﻿namespace ShowerQ.Models.Entities.Users
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace ShowerQ.Models.Entities.Users
 {
-    public class Tenant : User
+    public class Tenant : IdentityUser
     {
         public string FirstName { get; set; }
 
