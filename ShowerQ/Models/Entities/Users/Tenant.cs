@@ -10,6 +10,10 @@ namespace ShowerQ.Models.Entities.Users
 
         public Gender Gender { get; set; }
 
+        public int DormitoryId { get; set; }
+
+        public Dormitory Dormitory { get; set;}
+
         public string Room { get; set; }
     }
 }
