@@ -19,17 +19,10 @@ namespace ShowerQ.Models
 
         }
 
-        #region Users
-        public DbSet<Tenant> Tenants { get; set; }
-        public DbSet<DormitoryAdministrator> DormitoryAdministrators { get; set; }
-        public DbSet<SystemAdministrator> SystemAdministrators { get; set; }
-        #endregion
-
-        #region "Other entities"
         public DbSet<City> Cities { get; set; }
         public DbSet<Dormitory> Dormitories { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<University> Universities { get; set; }
-        #endregion
+        public DbSet<IdentityUser> Users { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using ShowerQ.Models.Entities.Users;
 using System.Linq;
 
@@ -33,10 +34,10 @@ namespace ShowerQ.Models.Entities.Validators
                 .WithMessage("Dormitory id is uncorrect.");
         }
 
-        public bool IsPhoneNumberUnique(Tenant tenant, string value)
+        public bool IsPhoneNumberUnique(IdentityUser user, string value)
         {
-            return _dbContext.Tenants.All(t =>
-              t.Equals(tenant) || tenant.PhoneNumber != value);
+            return _dbContext.Users.All(u =>
+              u.Equals(user) || user.PhoneNumber != value);
         }
     }
 }

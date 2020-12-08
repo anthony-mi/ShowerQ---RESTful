@@ -1,4 +1,4 @@
-﻿using FluentValidation
+﻿using FluentValidation;
 
 namespace ShowerQ.Models.Entities.Validators
 {
