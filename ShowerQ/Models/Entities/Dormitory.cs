@@ -1,4 +1,5 @@
-﻿using ShowerQ.Models.Entities.Users;
+﻿using Microsoft.AspNetCore.Identity;
+using ShowerQ.Models.Entities.Users;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +16,9 @@ namespace ShowerQ.Models.Entities
 
         public virtual University University { get; set; }
 
-        public virtual ICollection<Tenant> Tenants { get; set; }
+        public virtual ICollection<IdentityUser> Tenants { get; set; }
+
+        public virtual ICollection<IdentityUser> Administrators { get; set; }
 
         public int CurrentScheduleId {get; set;}
 
