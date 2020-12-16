@@ -19,10 +19,47 @@ namespace ShowerQ.Models
 
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<City>()
+               .HasMany(c => c.Universities)
+               .WithOne(u => u.City)
+               .HasForeignKey(u => u.CityId);
+
+            modelBuilder.Entity<Dormitory>()
+                .HasOne(d => d.University)
+                .WithMany(u => u.Dormitories)
+                .HasForeignKey(d => d.UniversityId);
+
+            modelBuilder.Entity<Dormitory>()
+                .HasMany(d => d.Tenants);
+
+            modelBuilder.Entity<Dormitory>()
+                .HasMany(d => d.Administrators);
+
+            modelBuilder.Entity<Dormitory>()
+                .HasOne(d => d.CurrentSchedule);
+
+            modelBuilder.Entity<Schedule>()
+               .HasMany(s => s.Intervals);
+
+            modelBuilder.Entity<University>()
+                .HasOne(u => u.City)
+                .WithMany(c => c.Universities)
+                .HasForeignKey(u => u.CityId);
+
+            modelBuilder.Entity<University>()
+                .HasMany(u => u.Dormitories)
+                .WithOne(d => d.University)
+                .HasForeignKey(d => d.UniversityId);
+
+            base.OnModelCreating(modelBuilder);
+        }
+
         public DbSet<City> Cities { get; set; }
         public DbSet<Dormitory> Dormitories { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<University> Universities { get; set; }
-        public DbSet<IdentityUser> Users { get; set; }
+        public new DbSet<IdentityUser> Users { get; set; }
     }
 }
