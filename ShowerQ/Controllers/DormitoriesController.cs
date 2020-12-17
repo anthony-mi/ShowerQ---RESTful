@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShowerQ.Models;
 using ShowerQ.Models.Entities;
+using ShowerQ.Models.Entities.Validators;
 
 namespace ShowerQ.Controllers
 {
@@ -23,14 +24,21 @@ namespace ShowerQ.Controllers
 
         // GET: api/Dormitories
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Dormitory>>> GetDormitories()
+        public async Task<ActionResult<IEnumerable<object>>> GetDormitories()
         {
-            return await _context.Dormitories.ToListAsync();
+            return _context.Dormitories
+                .Select(
+                dormitory => new
+                {
+                    id = dormitory.Id,
+                    address = dormitory.Address,
+                    universityId = dormitory.UniversityId
+                }).ToArray();
         }
 
         // GET: api/Dormitories/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Dormitory>> GetDormitory(int id)
+        public async Task<ActionResult<object>> GetDormitory(int id)
         {
             var dormitory = await _context.Dormitories.FindAsync(id);
 
@@ -39,7 +47,18 @@ namespace ShowerQ.Controllers
                 return NotFound();
             }
 
-            return dormitory;
+            var tenants = dormitory.Tenants.Select(tenant => tenant.Id).ToArray();
+
+            var administrators = dormitory.Administrators.Select(administrator => administrator.Id).ToArray();
+
+            return new { 
+                id = id,
+                address = dormitory.Address,
+                universityId = dormitory.UniversityId,
+                currentScheduleId = dormitory.CurrentScheduleId,
+                tenants = tenants,
+                administrators = administrators
+            };
         }
 
         // PUT: api/Dormitories/5
@@ -51,6 +70,15 @@ namespace ShowerQ.Controllers
             if (id != dormitory.Id)
             {
                 return BadRequest();
+            }
+
+            DormitoryValidator validator = new(_context);
+
+            var result = validator.Validate(dormitory);
+
+            if (!result.IsValid)
+            {
+                return StatusCode(500, new { errors = result.Errors });
             }
 
             _context.Entry(dormitory).State = EntityState.Modified;
@@ -85,6 +113,15 @@ namespace ShowerQ.Controllers
             dormitory.CurrentScheduleId = schedule.Id;
             dormitory.CurrentSchedule = schedule;
 
+            DormitoryValidator validator = new(_context);
+
+            var result = validator.Validate(dormitory);
+
+            if (!result.IsValid)
+            {
+                return StatusCode(500, new { errors = result.Errors });
+            }
+
             _context.Dormitories.Add(dormitory);
             await _context.SaveChangesAsync();
 
@@ -95,7 +132,9 @@ namespace ShowerQ.Controllers
         {
             var schedule = new Schedule();
             schedule.TenantsPerInterval = 1;
-            return _context.Schedules.Add(schedule).Entity;
+            _context.Schedules.Add(schedule);
+            _context.SaveChanges();
+            return schedule;
         }
 
         // DELETE: api/Dormitories/5
@@ -103,15 +142,24 @@ namespace ShowerQ.Controllers
         public async Task<ActionResult<Dormitory>> DeleteDormitory(int id)
         {
             var dormitory = await _context.Dormitories.FindAsync(id);
+
             if (dormitory == null)
             {
                 return NotFound();
             }
 
             _context.Dormitories.Remove(dormitory);
+
+            var schedule = _context.Schedules.FirstOrDefault(s => s.Id.Equals(dormitory.CurrentScheduleId));
+
+            if(schedule is not null)
+            {
+                _context.Schedules.Remove(schedule);
+            }
+            
             await _context.SaveChangesAsync();
 
-            return dormitory;
+            return Ok();
         }
 
         private bool DormitoryExists(int id)
