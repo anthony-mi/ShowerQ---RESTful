@@ -5,25 +5,33 @@ namespace ShowerQ.Models.Entities.Validators
 {
     public class DormitoryValidator : AbstractValidator<Dormitory>
     {
+        private readonly ApplicationDbContext _dbContext;
+
         public DormitoryValidator(ApplicationDbContext dbContext)
         {
+            _dbContext = dbContext;
+
             RuleFor(dormitory => dormitory.Address)
                 .NotEmpty()
                 .WithMessage(" Dormitory address must be not empty.");
 
-            var universitiesMinId = dbContext.Universities.Min(u => u.Id);
-            var universitiesMaxId = dbContext.Universities.Max(u => u.Id);
-
             RuleFor(dormitory => dormitory.UniversityId)
-                .Must(universityId => universityId >= universitiesMinId && universityId <= universitiesMaxId)
+                .Must(UniversityExists)
                 .WithMessage("University id is uncorrect.");
 
-            var schedulesMinId = dbContext.Schedules.Min(s => s.Id);
-            var schedulesMaxId = dbContext.Schedules.Max(s => s.Id);
-
             RuleFor(dormitory => dormitory.CurrentScheduleId)
-                .Must(scheduleId => scheduleId >= schedulesMinId && scheduleId <= schedulesMaxId)
+                .Must(ScheduleExists)
                 .WithMessage("Schedule id is uncorrect.");
+        }
+
+        private bool UniversityExists(Dormitory d, int universityId)
+        {
+            return _dbContext.Universities.FirstOrDefault(u => u.Id.Equals(universityId)) is not default(University);
+        }
+
+        private bool ScheduleExists(Dormitory d, int scheduleId)
+        {
+            return _dbContext.Schedules.FirstOrDefault(u => u.Id.Equals(scheduleId)) is not default(Schedule);
         }
     }
 }

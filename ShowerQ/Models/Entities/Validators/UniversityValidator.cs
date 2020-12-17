@@ -5,18 +5,24 @@ namespace ShowerQ.Models.Entities.Validators
 {
     public class UniversityValidator : AbstractValidator<University>
     {
+        private readonly ApplicationDbContext _dbContext;
+
         public UniversityValidator(ApplicationDbContext dbContext)
         {
+            _dbContext = dbContext;
+
             RuleFor(university => university.Name)
                 .NotEmpty()
                 .WithMessage("University name must be not empty.");
 
-            var minId = dbContext.Cities.Min(c => c.Id);
-            var maxId = dbContext.Cities.Max(c => c.Id);
-
             RuleFor(university => university.CityId)
-                .Must(cityId => cityId >= minId && cityId <= maxId)
+                .Must(CityExists)
                 .WithMessage("City id is uncorrect.");
+        }
+
+        private bool CityExists(University u, int cityId)
+        {
+            return _dbContext.Cities.FirstOrDefault(c => c.Id.Equals(cityId)) is not default(City);
         }
     }
 }

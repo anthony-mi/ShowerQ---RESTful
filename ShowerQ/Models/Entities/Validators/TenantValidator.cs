@@ -26,11 +26,8 @@ namespace ShowerQ.Models.Entities.Validators
                 .Must(IsPhoneNumberUnique)
                 .WithMessage("Tenant phone number must be unique.");
 
-            var minId = dbContext.Dormitories.Min(d => d.Id);
-            var maxId = dbContext.Dormitories.Max(d => d.Id);
-
             RuleFor(tenant => tenant.DormitoryId)
-                .Must(dormitoryId => dormitoryId >= minId && dormitoryId <= maxId)
+                .Must(DormitoryExists)
                 .WithMessage("Dormitory id is uncorrect.");
         }
 
@@ -38,6 +35,12 @@ namespace ShowerQ.Models.Entities.Validators
         {
             return _dbContext.Users.All(u =>
               u.Equals(user) || user.PhoneNumber != value);
+        }
+
+        private bool DormitoryExists(IdentityUser tenant, int dormitoryId)
+        {
+            return _dbContext.Dormitories
+                .FirstOrDefault(d => d.Id.Equals(dormitoryId)) is not default(Dormitory);
         }
     }
 }
