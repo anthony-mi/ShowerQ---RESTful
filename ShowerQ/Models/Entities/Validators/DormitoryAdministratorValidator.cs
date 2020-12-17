@@ -8,10 +8,8 @@ namespace ShowerQ.Models.Entities.Validators
     {
         public DormitoryAdministratorValidator(ApplicationDbContext dbContext)
         {
-            /// HACK:    first record doesn't always correspond to the minimum id.
-            ///          The same as the last.
-            var minId = dbContext.Dormitories.First().Id;
-            var maxId = dbContext.Dormitories.Last().Id;
+            var minId = dbContext.Dormitories.Min(d => d.Id);
+            var maxId = dbContext.Dormitories.Max(d => d.Id);
 
             RuleFor(administrator => administrator.DormitoryId)
                 .Must(dormitoryId => dormitoryId >= minId && dormitoryId <= maxId)

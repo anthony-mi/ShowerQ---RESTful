@@ -26,8 +26,8 @@ namespace ShowerQ.Models.Entities.Validators
                 .Must(IsPhoneNumberUnique)
                 .WithMessage("Tenant phone number must be unique.");
 
-            var minId = dbContext.Dormitories.First().Id;
-            var maxId = dbContext.Dormitories.Last().Id;
+            var minId = dbContext.Dormitories.Min(d => d.Id);
+            var maxId = dbContext.Dormitories.Max(d => d.Id);
 
             RuleFor(tenant => tenant.DormitoryId)
                 .Must(dormitoryId => dormitoryId >= minId && dormitoryId <= maxId)

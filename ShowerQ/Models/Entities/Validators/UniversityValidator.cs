@@ -11,10 +11,8 @@ namespace ShowerQ.Models.Entities.Validators
                 .NotEmpty()
                 .WithMessage("University name must be not empty.");
 
-            /// HACK:    first record doesn't always correspond to the minimum id.
-            ///          The same as the last.
-            var minId = dbContext.Cities.First().Id;
-            var maxId = dbContext.Cities.Last().Id;
+            var minId = dbContext.Cities.Min(c => c.Id);
+            var maxId = dbContext.Cities.Max(c => c.Id);
 
             RuleFor(university => university.CityId)
                 .Must(cityId => cityId >= minId && cityId <= maxId)
