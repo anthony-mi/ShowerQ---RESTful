@@ -95,7 +95,7 @@ namespace ShowerQ.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Universities
