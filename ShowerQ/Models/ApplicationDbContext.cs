@@ -35,7 +35,14 @@ namespace ShowerQ.Models
                 .HasOne(d => d.CurrentSchedule);
 
             modelBuilder.Entity<Schedule>()
-               .HasMany(s => s.Intervals);
+               .HasMany(s => s.Intervals)
+               .WithOne(i => i.Schedule)
+               .HasForeignKey(i => i.ScheduleId);
+
+            modelBuilder.Entity<Interval>()
+               .HasOne(i => i.Schedule)
+               .WithMany(s => s.Intervals)
+               .HasForeignKey(i => i.ScheduleId);
 
             modelBuilder.Entity<University>()
                 .HasOne(u => u.City)
@@ -53,6 +60,7 @@ namespace ShowerQ.Models
         public DbSet<City> Cities { get; set; }
         public DbSet<Dormitory> Dormitories { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
+        public DbSet<Interval> Intervals { get; set; }
         public DbSet<University> Universities { get; set; }
         public new DbSet<IdentityUser> Users { get; set; }
     }

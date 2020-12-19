@@ -13,6 +13,7 @@ namespace ShowerQ.Models.Entities
 
         public Schedule()
         {
+            Intervals = new Interval[] { };
         }
 
         public Schedule(ILazyLoader lazyLoader)

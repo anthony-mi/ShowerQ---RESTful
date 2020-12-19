@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShowerQ.Models;
 
 namespace ShowerQ.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201218010518_ChangeIntervalTableName")]
+    partial class ChangeIntervalTableName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,7 +280,7 @@ namespace ShowerQ.Migrations
                     b.Property<DateTime>("Finishing")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ScheduleId")
+                    b.Property<int?>("ScheduleId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -406,13 +408,9 @@ namespace ShowerQ.Migrations
 
             modelBuilder.Entity("ShowerQ.Models.Entities.Interval", b =>
                 {
-                    b.HasOne("ShowerQ.Models.Entities.Schedule", "Schedule")
+                    b.HasOne("ShowerQ.Models.Entities.Schedule", null)
                         .WithMany("Intervals")
-                        .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Schedule");
+                        .HasForeignKey("ScheduleId");
                 });
 
             modelBuilder.Entity("ShowerQ.Models.Entities.University", b =>
