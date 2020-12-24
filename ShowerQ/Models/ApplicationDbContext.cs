@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ShowerQ.Models.Entities;
+using System;
+using System.Diagnostics;
 
 namespace ShowerQ.Models
 {
@@ -56,6 +58,12 @@ namespace ShowerQ.Models
 
             base.OnModelCreating(modelBuilder);
         }
+
+#if DEBUG
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.LogTo(message => Debug.WriteLine(message));
+#endif
+
 
         public DbSet<City> Cities { get; set; }
         public DbSet<Dormitory> Dormitories { get; set; }
