@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShowerQ.Models;
 using ShowerQ.Models.Entities;
@@ -146,6 +145,8 @@ namespace ShowerQ.Controllers
                 PhoneNumber = phoneNumber,
             };
 
+            using var transaction = _dbContext.Database.BeginTransaction();
+
             var creationResult = await _userManager.CreateAsync(dormitoryAdministrator, password);
 
             if(!creationResult.Succeeded)
@@ -172,6 +173,7 @@ namespace ShowerQ.Controllers
             try
             {
                 _dbContext.SaveChanges();
+                transaction.Commit();
             }
             catch(Exception ex)
             {
@@ -183,7 +185,7 @@ namespace ShowerQ.Controllers
 
         [HttpDelete]
         [Authorize(Roles = "SystemAdministrator")]
-        public async Task<ActionResult<IdentityUser>> Delete(string id)
+        public async Task<IActionResult> Delete(string id)
         {
             var admin = await _dbContext.Users.FindAsync(id);
 
@@ -192,7 +194,8 @@ namespace ShowerQ.Controllers
                 return NotFound();
             }
 
-            if (!_userManager.IsInRoleAsync(admin, "Tenant").Result)
+            if (!_userManager.IsInRoleAsync(admin, "Tenant").Result &&
+                !_userManager.IsInRoleAsync(admin, "SystemAdministrator").Result)
             {
                 _dbContext.Users.Remove(admin);
             }
@@ -203,7 +206,7 @@ namespace ShowerQ.Controllers
 
             await _dbContext.SaveChangesAsync();
 
-            return admin;
+            return Ok();
         }
     }
 }
