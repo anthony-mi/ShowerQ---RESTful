@@ -53,6 +53,8 @@ namespace ShowerQ.Models.Entities.Users
 
         public string Room { get; set; }
 
+        public uint Priority { get; set; }
+
         public ApplicationDbContext DbContext { get; set; }
 
         public ICollection<Claim> GenerateClaims()

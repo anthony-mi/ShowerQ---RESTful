@@ -12,6 +12,7 @@ using ShowerQ.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -82,7 +83,8 @@ namespace ShowerQ.Controllers
                     lastName = tenant.LastName,
                     gender = tenant.Gender,
                     dormitoryId = tenant.DormitoryId,
-                    room = tenant.Room
+                    room = tenant.Room,
+                    priority = tenant.Priority
                 });
         }
 
@@ -114,6 +116,8 @@ namespace ShowerQ.Controllers
             {
                 return StatusCode(500, new { errors = result.Errors });
             }
+
+            tenant.Priority = CalculatePriority(tenant);
 
             using var transaction = _dbContext.Database.BeginTransaction();
 
@@ -158,6 +162,54 @@ namespace ShowerQ.Controllers
             }
 
             return StatusCode(201, new { id = tenant.Id });
+        }
+
+        private uint CalculatePriority(Tenant tenant)
+        {
+            uint priority = 0;
+
+            var dormitory = _dbContext.Dormitories.FirstOrDefault(d => d.Id.Equals(tenant.DormitoryId));
+
+            if(dormitory is null)
+            {
+                return priority;
+            }
+
+            var dormitoryIdClaimType = GetPropertyName(() => tenant.DormitoryId);
+            var genderClaimType = GetPropertyName(() => tenant.Gender);
+            var priorityClaimType = GetPropertyName(() => tenant.Priority);
+
+            var dormitoryTenants = _dbContext.UserClaims
+                .Where(claim => claim.ClaimType.Equals(dormitoryIdClaimType) && claim.ClaimValue.Equals(tenant.DormitoryId.ToString()))
+                .Select(claim => claim.UserId);
+
+            if (dormitoryTenants.Count() == 0)
+            {
+                return priority;
+            }
+
+            var sameGenderTenants = _dbContext.UserClaims
+                .Where(claim => claim.ClaimType.Equals(genderClaimType) &&
+                claim.ClaimValue.Equals(tenant.Gender.ToString()) &&
+                dormitoryTenants.Contains(claim.UserId))
+                .Select(claim => claim.UserId);
+
+            if(sameGenderTenants.Count() == 0)
+            {
+                return priority;
+            }
+
+            priority = Convert.ToUInt32(_dbContext.UserClaims
+                .Where(claim => sameGenderTenants.Contains(claim.UserId) && claim.ClaimType.Equals(priorityClaimType))
+                .Select(claim => Convert.ToInt32(claim.ClaimValue))
+                .Average((el) => el));
+
+            return priority;
+        }
+
+        public static string GetPropertyName<T>(Expression<Func<T>> propertyExpression)
+        {
+            return (propertyExpression.Body as MemberExpression).Member.Name;
         }
 
         // PUT api/<TenantsController>/5
