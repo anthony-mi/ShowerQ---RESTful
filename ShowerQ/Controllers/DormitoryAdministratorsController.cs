@@ -21,9 +21,12 @@ namespace ShowerQ.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+
         private readonly IConfiguration _configuration;
         private readonly IPhoneNumberFormatter _phoneNumberFormatter;
+
         private readonly string DormitoryAdministratorRoleName = "DormitoryAdministrator";
+        private readonly string DormitoryIdClaimType = "DormitoryId";
 
         public DormitoryAdministratorsController(
             ApplicationDbContext context, 
@@ -41,9 +44,9 @@ namespace ShowerQ.Controllers
 
         [HttpGet]
         [Authorize(Roles = "SystemAdministrator")]
-        public async Task<ActionResult<IEnumerable<IdentityUser>>> GetAllDormitoryAdministrators()
+        public async Task<ActionResult<IEnumerable<object>>> GetAllDormitoryAdministrators()
         {
-            List<IdentityUser> administrators = new();
+            List<object> administrators = new();
 
             foreach (var dormitory in _dbContext.Dormitories)
             {
@@ -51,7 +54,15 @@ namespace ShowerQ.Controllers
                 {
                     if (!administrators.Contains(admin))
                     {
-                        administrators.Add(admin);
+                        var claim = _userManager.GetClaimsAsync(admin).Result.FirstOrDefault(cl => cl.Type.Equals(DormitoryIdClaimType));
+                        var dormitoryId = Convert.ToInt32(claim.Value);
+
+                        administrators.Add(new 
+                        {
+                            id = admin.Id,
+                            phoneNumber = admin.PhoneNumber,
+                            dormitoryId = dormitoryId
+                        });
                     }
                 }
             }
@@ -121,7 +132,7 @@ namespace ShowerQ.Controllers
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         [Authorize(Roles = "SystemAdministrator")]
-        public async Task<ActionResult<City>> Create(string phoneNumber, string password, int dormitoryId)
+        public async Task<ActionResult<object>> Create([FromForm] string phoneNumber, [FromForm] string password, [FromForm] int dormitoryId)
         {
             var dormitory = _dbContext.Dormitories.FirstOrDefault(d => d.Id.Equals(dormitoryId));
 
@@ -170,6 +181,15 @@ namespace ShowerQ.Controllers
 
             dormitory.Administrators.Add(dormitoryAdministrator);
 
+            var claim = new Claim(type: DormitoryIdClaimType, value: dormitoryId.ToString());
+
+            var createClaimResult = await _userManager.AddClaimAsync(dormitoryAdministrator, claim);
+
+            if (!createClaimResult.Succeeded)
+            {
+                return StatusCode(500, new { errors = createClaimResult.Errors });
+            }
+
             try
             {
                 _dbContext.SaveChanges();
@@ -180,7 +200,7 @@ namespace ShowerQ.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return StatusCode(201, dormitoryAdministrator);
+            return StatusCode(201, new { id = dormitoryAdministrator.Id});
         }
 
         [HttpDelete]
@@ -194,6 +214,8 @@ namespace ShowerQ.Controllers
                 return NotFound();
             }
 
+            using var transaction = _dbContext.Database.BeginTransaction();
+
             if (!_userManager.IsInRoleAsync(admin, "Tenant").Result &&
                 !_userManager.IsInRoleAsync(admin, "SystemAdministrator").Result)
             {
@@ -204,7 +226,12 @@ namespace ShowerQ.Controllers
                 await _userManager.RemoveFromRoleAsync(admin, DormitoryAdministratorRoleName);
             }
 
+            var claims = _dbContext.UserClaims.Where(cl => cl.UserId.Equals(id));
+            _dbContext.UserClaims.RemoveRange(claims);
+
             await _dbContext.SaveChangesAsync();
+
+            transaction.Commit();
 
             return Ok();
         }
