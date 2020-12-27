@@ -301,14 +301,16 @@ namespace ShowerQ.Controllers
 
             using var transaction = _dbContext.Database.BeginTransaction();
 
+            await _userManager.RemoveFromRoleAsync(tenant, TenantRoleName);
+
+            var claims = _dbContext.UserClaims.Where(cl => cl.UserId.Equals(id));
+
+            _dbContext.UserClaims.RemoveRange(claims);
+
             if (!_userManager.IsInRoleAsync(tenant, "SystemAdministrator").Result &&
                 !_userManager.IsInRoleAsync(tenant, "DormitoryAdministrator").Result)
             {
                 _dbContext.Users.Remove(tenant);
-            }
-            else
-            {
-                await _userManager.RemoveFromRoleAsync(tenant, TenantRoleName);
             }
 
             await _dbContext.SaveChangesAsync();
