@@ -106,7 +106,7 @@ namespace ShowerQ.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<Dormitory>> PostDormitory(Dormitory dormitory)
+        public async Task<ActionResult<object>> PostDormitory(Dormitory dormitory)
         {
             var schedule = CreateNewSchedule();
 
@@ -125,7 +125,7 @@ namespace ShowerQ.Controllers
             _context.Dormitories.Add(dormitory);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDormitory", new { id = dormitory.Id }, dormitory);
+            return StatusCode(201, new { id = dormitory.Id });
         }
 
         private Schedule CreateNewSchedule()

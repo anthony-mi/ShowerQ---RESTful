@@ -90,7 +90,7 @@ namespace ShowerQ.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<City>> PostCity(City city)
+        public async Task<ActionResult<object>> PostCity(City city)
         {
             CityValidator validator = new();
 
@@ -104,7 +104,7 @@ namespace ShowerQ.Controllers
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCity", new { id = city.Id }, city);
+            return StatusCode(201, new { id = city.Id });
         }
 
         // DELETE: api/Cities/5
