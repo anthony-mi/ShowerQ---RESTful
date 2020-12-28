@@ -72,9 +72,11 @@ namespace ShowerQ.Controllers
 
             _context.Intervals.RemoveRange(intervals);
 
-            _context.Entry(schedule).State = EntityState.Modified;
-
             _context.Intervals.AddRange(schedule.Intervals);
+
+            schedule.Intervals = null;
+
+            _context.Entry(schedule).State = EntityState.Modified;
 
             try
             {
