@@ -15,11 +15,11 @@ namespace ShowerQ.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "OAuth", Roles = "Tenant")]
-    public class TenantsRequestsController : ControllerBase
+    public class ReservationRequestsController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public TenantsRequestsController(ApplicationDbContext context)
+        public ReservationRequestsController(ApplicationDbContext context)
         {
             _dbContext = context;
         }
@@ -28,7 +28,7 @@ namespace ShowerQ.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<object>> Get(int id)
         {
-            var request = await _dbContext.TenantsRequests.FindAsync(id);
+            var request = await _dbContext.ReservationRequests.FindAsync(id);
 
             if (request == null)
             {
@@ -48,7 +48,7 @@ namespace ShowerQ.Controllers
 
         // POST api/<TenantsRequestsController>
         [HttpPost]
-        public async Task<ActionResult<object>> Post([FromBody] TenantsRequest tenantsRequest)
+        public async Task<ActionResult<object>> Post([FromBody] ReservationRequest tenantsRequest)
         {
             var userDataClaim = GetCurrentUserIdClaim();
 
@@ -60,7 +60,7 @@ namespace ShowerQ.Controllers
             tenantsRequest.TenantId = userDataClaim.Value;
             tenantsRequest.Created = DateTime.UtcNow;
 
-            TenantsRequestValidator validator = new(_dbContext);
+            ReservationRequestValidator validator = new(_dbContext);
 
             var result = validator.Validate(tenantsRequest);
 
@@ -69,7 +69,7 @@ namespace ShowerQ.Controllers
                 return StatusCode(500, new { errors = result.Errors });
             }
 
-            _dbContext.TenantsRequests.Add(tenantsRequest);
+            _dbContext.ReservationRequests.Add(tenantsRequest);
             await _dbContext.SaveChangesAsync();
 
             return StatusCode(201, new { id = tenantsRequest.Id });
@@ -79,7 +79,7 @@ namespace ShowerQ.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var request = await _dbContext.TenantsRequests.FindAsync(id);
+            var request = await _dbContext.ReservationRequests.FindAsync(id);
 
             if (request == null)
             {
@@ -100,7 +100,7 @@ namespace ShowerQ.Controllers
                 return Unauthorized();
             }
 
-            _dbContext.TenantsRequests.Remove(request);
+            _dbContext.ReservationRequests.Remove(request);
 
             await _dbContext.SaveChangesAsync();
 

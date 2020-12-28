@@ -4,18 +4,18 @@ using System;
 
 namespace ShowerQ.Models.Entities
 {
-    public class TenantsRequest
+    public class ReservationRequest
     {
         private readonly ILazyLoader _lazyLoader;
 
         private IdentityUser _tenant;
         private Interval _interval;
 
-        public TenantsRequest()
+        public ReservationRequest()
         {
         }
 
-        public TenantsRequest(ILazyLoader lazyLoader)
+        public ReservationRequest(ILazyLoader lazyLoader)
         {
             _lazyLoader = lazyLoader;
         }

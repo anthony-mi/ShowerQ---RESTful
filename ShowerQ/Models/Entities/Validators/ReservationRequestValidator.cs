@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace ShowerQ.Models.Entities.Validators
 {
-    public class TenantsRequestValidator : AbstractValidator<TenantsRequest>
+    public class ReservationRequestValidator : AbstractValidator<ReservationRequest>
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public TenantsRequestValidator(ApplicationDbContext context)
+        public ReservationRequestValidator(ApplicationDbContext context)
         {
             _dbContext = context;
 
@@ -30,14 +30,14 @@ namespace ShowerQ.Models.Entities.Validators
             /// TODO: check if there is an interval (id) in the current dormitories schedule.
         }
 
-        private bool TenantExists(TenantsRequest request, string tenantId)
+        private bool TenantExists(ReservationRequest request, string tenantId)
         {
             /// TODO: check if user is in `Tenant` role.
             return _dbContext.Users
                 .FirstOrDefault(d => d.Id.Equals(tenantId)) is not default(IdentityUser);
         }
 
-        private bool IntervalExists(TenantsRequest request, int intervalId)
+        private bool IntervalExists(ReservationRequest request, int intervalId)
         {
             return _dbContext.Intervals
                 .FirstOrDefault(d => d.Id.Equals(intervalId)) is not default(Interval);

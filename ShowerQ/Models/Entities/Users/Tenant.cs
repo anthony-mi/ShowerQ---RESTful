@@ -55,9 +55,9 @@ namespace ShowerQ.Models.Entities.Users
 
         public uint Priority { get; set; }
 
-        public TenantsRequest[] Requests
+        public ReservationRequest[] ReservationRequests
         {
-            get => DbContext.TenantsRequests.Where(r => r.TenantId.Equals(Id)).ToArray();
+            get => DbContext.ReservationRequests.Where(r => r.TenantId.Equals(Id)).ToArray();
         }
 
         public ApplicationDbContext DbContext { get; set; }

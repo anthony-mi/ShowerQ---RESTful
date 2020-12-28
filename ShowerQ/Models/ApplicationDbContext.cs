@@ -55,7 +55,7 @@ namespace ShowerQ.Models
                 .WithOne(d => d.University)
                 .HasForeignKey(d => d.UniversityId);
 
-            modelBuilder.Entity<TenantsRequest>()
+            modelBuilder.Entity<ReservationRequest>()
                 .HasOne(tr => tr.Tenant);
 
             base.OnModelCreating(modelBuilder);
@@ -70,7 +70,7 @@ namespace ShowerQ.Models
         public DbSet<City> Cities { get; set; }
         public DbSet<Dormitory> Dormitories { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
-        public DbSet<TenantsRequest> TenantsRequests { get; set; }
+        public DbSet<ReservationRequest> ReservationRequests { get; set; }
         public DbSet<Interval> Intervals { get; set; }
         public DbSet<University> Universities { get; set; }
         public new DbSet<IdentityUser> Users { get; set; }
