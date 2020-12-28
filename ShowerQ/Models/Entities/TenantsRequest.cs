@@ -38,6 +38,14 @@ namespace ShowerQ.Models.Entities
             set => _interval = value;
         }
 
+        /// <summary>
+        /// Date on which the tenant makes a shower reservation.
+        /// </summary>
         public DateTime Date { get; set; }
+
+        /// <summary>
+        /// Request creation date.
+        /// </summary>
+        public DateTime Created { get; set; }
     }
 }

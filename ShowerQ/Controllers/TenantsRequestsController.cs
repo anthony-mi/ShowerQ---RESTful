@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShowerQ.Models;
 using ShowerQ.Models.Entities;
 using ShowerQ.Models.Entities.Validators;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -39,7 +40,8 @@ namespace ShowerQ.Controllers
                 id = request.Id,
                 tenantId = request.TenantId,
                 intervalId = request.IntervalId,
-                date = request.Date
+                date = request.Date,
+                created = request.Created
             };
 
         }
@@ -56,6 +58,7 @@ namespace ShowerQ.Controllers
             }
 
             tenantsRequest.TenantId = userDataClaim.Value;
+            tenantsRequest.Created = DateTime.UtcNow;
 
             TenantsRequestValidator validator = new(_dbContext);
 
