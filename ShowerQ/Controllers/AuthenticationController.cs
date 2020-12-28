@@ -87,6 +87,10 @@ namespace ShowerQ.Controllers
 
             claims.Add(new Claim(ClaimTypes.UserData, user.Id));
 
+            var userClaims = _userManager.GetClaimsAsync(user).Result;
+
+            claims.AddRange(userClaims);
+
             return claims;
         }
 
