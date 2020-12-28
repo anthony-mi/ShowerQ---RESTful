@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +14,8 @@ namespace ShowerQ.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = "OAuth", Roles = "SystemAdministrator")]
+    //[Authorize(AuthenticationSchemes = "OAuth")]
+    [Authorize(AuthenticationSchemes = "OAuth")]
     public class DormitoriesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -24,6 +27,7 @@ namespace ShowerQ.Controllers
 
         // GET: api/Dormitories
         [HttpGet]
+        [Authorize(Roles = "SystemAdministrator")]
         public async Task<ActionResult<IEnumerable<object>>> GetDormitories()
         {
             return _context.Dormitories
@@ -38,6 +42,8 @@ namespace ShowerQ.Controllers
 
         // GET: api/Dormitories/5
         [HttpGet("{id}")]
+        //[Authorize(AuthenticationSchemes = "OAuth", Roles = "DormitoryAdministrator")]
+        [Authorize(Roles = "SystemAdministrator, DormitoryAdministrator")]
         public async Task<ActionResult<object>> GetDormitory(int id)
         {
             var dormitory = await _context.Dormitories.FindAsync(id);
@@ -65,11 +71,27 @@ namespace ShowerQ.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
+        //[Authorize(AuthenticationSchemes = "OAuth", Roles = "DormitoryAdministrator")]
+        [Authorize(Roles = "SystemAdministrator, DormitoryAdministrator")]
         public async Task<IActionResult> PutDormitory(int id, Dormitory dormitory)
         {
             if (id != dormitory.Id)
             {
                 return BadRequest();
+            }
+
+            var claim = User.Claims.FirstOrDefault(cl => cl.Type.Equals("DormitoryId"));
+
+            if(claim is default(Claim))
+            {
+                return StatusCode(500, new { error = "DormitoryId of current user not found." });
+            }
+
+            var dormitoryId = Convert.ToInt32(claim.Value);
+
+            if(dormitoryId != id)
+            {
+                return Unauthorized();
             }
 
             DormitoryValidator validator = new(_context);
@@ -106,6 +128,7 @@ namespace ShowerQ.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
+        [Authorize(Roles = "SystemAdministrator")]
         public async Task<ActionResult<object>> PostDormitory(Dormitory dormitory)
         {
             var schedule = CreateNewSchedule();
@@ -139,6 +162,7 @@ namespace ShowerQ.Controllers
 
         // DELETE: api/Dormitories/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "SystemAdministrator")]
         public async Task<ActionResult<Dormitory>> DeleteDormitory(int id)
         {
             var dormitory = await _context.Dormitories.FindAsync(id);
