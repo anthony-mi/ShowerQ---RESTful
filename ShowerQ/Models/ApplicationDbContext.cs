@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ShowerQ.Models.Entities;
-using System;
 using System.Diagnostics;
 
 namespace ShowerQ.Models
@@ -56,6 +55,9 @@ namespace ShowerQ.Models
                 .WithOne(d => d.University)
                 .HasForeignKey(d => d.UniversityId);
 
+            modelBuilder.Entity<TenantsRequest>()
+                .HasOne(tr => tr.Tenant);
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -68,6 +70,7 @@ namespace ShowerQ.Models
         public DbSet<City> Cities { get; set; }
         public DbSet<Dormitory> Dormitories { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
+        public DbSet<TenantsRequest> TenantsRequests { get; set; }
         public DbSet<Interval> Intervals { get; set; }
         public DbSet<University> Universities { get; set; }
         public new DbSet<IdentityUser> Users { get; set; }
