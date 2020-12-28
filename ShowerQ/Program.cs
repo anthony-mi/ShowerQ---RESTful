@@ -1,3 +1,5 @@
+//#define CREATE_TESTING_INTERVAL
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +18,7 @@ namespace ShowerQ
 
             using var services = host.Services.CreateScope();
 
-            var dbContext = services.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            using var dbContext = services.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.Migrate();
 
 #if DEBUG
@@ -41,8 +43,23 @@ namespace ShowerQ
                     }
                 }
                 userManager.AddToRoleAsync(user, "SystemAdministrator").GetAwaiter().GetResult();
+                userManager.AddToRoleAsync(user, "DormitoryAdministrator").GetAwaiter().GetResult();
+                userManager.AddToRoleAsync(user, "Tenant").GetAwaiter().GetResult();
                 dbContext.SaveChanges();
-            } 
+            }
+#endif
+
+#if DEBUG && CREATE_TESTING_INTERVAL
+            var interval = new Interval()
+            {
+                Beginning = DateTime.Now,
+                Finishing = DateTime.Now.AddMinutes(10),
+                ScheduleId = 8
+            };
+
+            dbContext.Intervals.Add(interval);
+
+            dbContext.SaveChanges();
 #endif
 
             host.Run();
