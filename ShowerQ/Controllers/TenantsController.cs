@@ -58,6 +58,12 @@ namespace ShowerQ.Controllers
         public async Task<ActionResult<object>> Get(string id)
         {
             var user = _dbContext.Users.FirstOrDefault(user => user.Id.Equals(id));
+
+            if(user is null)
+            {
+                return NotFound();
+            }
+
             var tenant = new Tenant(user);
             var claims = await _userManager.GetClaimsAsync(tenant);
 
@@ -107,6 +113,15 @@ namespace ShowerQ.Controllers
             }
 
             tenant.UserName = tenant.PhoneNumber.Replace(" ", string.Empty);
+
+            var dormitoryIdClaim = User.Claims.FirstOrDefault(cl => cl.Type.Equals("DormitoryId"));
+
+            if (dormitoryIdClaim is default(Claim))
+            {
+                return StatusCode(500, new { error = "DormitoryId of current user not found." });
+            }
+
+            tenant.DormitoryId = Convert.ToInt32(dormitoryIdClaim.Value);
 
             TenantValidator validator = new(_dbContext);
 
@@ -216,6 +231,8 @@ namespace ShowerQ.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] TenantModel tenant)
         {
+            ///TODO: handle the situation when the administrator tries to change dormitory ID.
+
             if (id != tenant.Id)
             {
                 return BadRequest();
@@ -296,7 +313,30 @@ namespace ShowerQ.Controllers
 
             if (tenant == null || !_userManager.IsInRoleAsync(tenant, TenantRoleName).Result)
             {
-                return NotFound();
+                return NotFound("Tenant not found.");
+            }
+
+            var tenantClaim = GetDormitoryIdClaim(id);
+
+            if(tenantClaim is null)
+            {
+                return NotFound("Tenants dormitory Id not found.");
+            }
+
+            var tenantDormitoryId = Convert.ToInt32(tenantClaim.ClaimValue);
+
+            var administratorClaim = User.Claims.FirstOrDefault(cl => cl.Type.Equals("DormitoryId"));
+
+            if (administratorClaim is null)
+            {
+                return NotFound("Administrators dormitory ID not found.");
+            }
+
+            var administratorDormitoryId = Convert.ToInt32(administratorClaim.Value);
+
+            if(tenantDormitoryId != administratorDormitoryId)
+            {
+                return Unauthorized();
             }
 
             using var transaction = _dbContext.Database.BeginTransaction();
@@ -318,6 +358,11 @@ namespace ShowerQ.Controllers
             transaction.Commit();
 
             return Ok();
+        }
+
+        private IdentityUserClaim<string>? GetDormitoryIdClaim(string userId)
+        {
+            return _dbContext.UserClaims.FirstOrDefault(cl => cl.UserId.Equals(userId) && cl.ClaimType.Equals("DormitoryId"));
         }
     }
 }
