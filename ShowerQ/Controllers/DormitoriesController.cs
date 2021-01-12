@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ShowerQ.Models;
 using ShowerQ.Models.Entities;
 using ShowerQ.Models.Entities.Validators;
@@ -19,10 +20,12 @@ namespace ShowerQ.Controllers
     public class DormitoriesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public DormitoriesController(ApplicationDbContext context)
+        public DormitoriesController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: api/Dormitories
@@ -63,7 +66,8 @@ namespace ShowerQ.Controllers
                 universityId = dormitory.UniversityId,
                 currentScheduleId = dormitory.CurrentScheduleId,
                 tenants = tenants,
-                administrators = administrators
+                administrators = administrators,
+                daysBeforePrioritiesNormalization = dormitory.DaysBeforePrioritiesNormalization
             };
         }
 
@@ -135,6 +139,8 @@ namespace ShowerQ.Controllers
 
             dormitory.CurrentScheduleId = schedule.Id;
             dormitory.CurrentSchedule = schedule;
+
+            dormitory.DaysBeforePrioritiesNormalization = Convert.ToInt32(_configuration["PrioritiesNormalization:DefaultDaysCount"]);
 
             DormitoryValidator validator = new(_context);
 

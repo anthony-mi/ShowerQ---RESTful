@@ -22,6 +22,10 @@ namespace ShowerQ.Models.Entities.Validators
             RuleFor(dormitory => dormitory.CurrentScheduleId)
                 .Must(ScheduleExists)
                 .WithMessage("Schedule id is uncorrect.");
+
+            RuleFor(dormitory => dormitory.DaysBeforePrioritiesNormalization)
+                .Must(value => value > 0)
+                .WithMessage("Count of days before priorities normalization uncorrect.");
         }
 
         private bool UniversityExists(Dormitory d, int universityId)

@@ -56,5 +56,7 @@ namespace ShowerQ.Models.Entities
             get => _lazyLoader.Load(this, ref _currentSchedule);
             set => _currentSchedule = value;
         }
+
+        public int DaysBeforePrioritiesNormalization { get; set; }
     }
 }
