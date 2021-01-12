@@ -74,5 +74,6 @@ namespace ShowerQ.Models
         public DbSet<Interval> Intervals { get; set; }
         public DbSet<University> Universities { get; set; }
         public new DbSet<IdentityUser> Users { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
     }
 }
